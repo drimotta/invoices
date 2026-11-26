@@ -1,9 +1,7 @@
-package main
+package invoices
 
 import (
-	"bytes"
 	"fmt"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -13,13 +11,12 @@ import (
 	"github.com/gpdf-dev/gpdf/template"
 )
 
-// buildInvoice renders the invoice described by cfg and returns the PDF bytes.
-func buildInvoice(cfg *Config) ([]byte, error) {
-	p := cfg.Params
+// buildInvoice renders validated params and returns the PDF bytes.
+func buildInvoice(p *Params) ([]byte, error) {
 	page, doc := initializePage(p)
 	buildHeader(page, p)
 	buildCustomer(page, p)
-	buildItems(page, p, cfg.Currency)
+	buildItems(page, p, p.EffectiveCurrency())
 	buildCompany(page, p)
 	return doc.Generate()
 }
@@ -57,28 +54,8 @@ func spacer(page *template.PageBuilder, h float64) {
 	})
 }
 
-// loadLogo returns SVG bytes from an inline SVG string or a file path; nil if
-// absent or not an SVG.
-func loadLogo(logo string) []byte {
-	if logo == "" {
-		return nil
-	}
-	data := []byte(logo)
-	if !bytes.Contains(data, []byte("<svg")) {
-		var err error
-		if data, err = os.ReadFile(logo); err != nil {
-			fmt.Fprintln(os.Stderr, "invoice: logo ignored:", err)
-			return nil
-		}
-	}
-	if !bytes.Contains(data, []byte("<svg")) {
-		return nil
-	}
-	return data
-}
-
 func buildHeader(page *template.PageBuilder, p *Params) {
-	logo := loadLogo(p.Company.Logo)
+	logo := LogoSVG(p.Company.Logo)
 	page.AutoRow(func(r *template.RowBuilder) {
 		r.Col(6, func(c *template.ColBuilder) {
 			c.Text("INVOICE", template.FontSize(24), template.Bold())
@@ -111,9 +88,9 @@ func buildItems(page *template.PageBuilder, p *Params, cur Currency) {
 	for _, it := range p.Items {
 		total := it.PriceCents * it.Qty
 		subtotal += total
-		rows = append(rows, []string{it.Name, formatCurrency(cur, it.PriceCents), strconv.FormatInt(it.Qty, 10), formatCurrency(cur, total)})
+		rows = append(rows, []string{it.Name, FormatCurrency(cur, it.PriceCents), strconv.FormatInt(it.Qty, 10), FormatCurrency(cur, total)})
 	}
-	rows = append(rows, []string{"Subtotal", "", "", formatCurrency(cur, subtotal)})
+	rows = append(rows, []string{"Subtotal", "", "", FormatCurrency(cur, subtotal)})
 	page.AutoRow(func(r *template.RowBuilder) {
 		r.Col(12, func(c *template.ColBuilder) {
 			c.Table([]string{"Item", "Price", "Qty", "Total"}, rows,

@@ -1,2 +1,4 @@
 invoice
 *.pdf
+build/
+/invoices
