@@ -1,0 +1,5 @@
+{"items":[{"name":"Consulting","price_cents":15000,"qty":40},{"name":"Design","price_cents":1234567,"qty":1}],
+"customer":{"name":"Acme Ltd","details":"1 Main St\nSpringfield\nUSA"},
+"invoice":{"number":42,"due":"2001-11-01"},
+"company":{"name":"Drimotta","details":"Rua A, 10\nSao Paulo","banking":"Bank X\nAcc 123","logo":"<svg xmlns='http://www.w3.org/2000/svg' width='100' height='40' viewBox='0 0 100 40'><rect width='100' height='40' fill='#1a237e'/></svg>"},
+"currency":{"symbol":"R$","grouper":".","group_size":3,"decimal_separator":",","decimal_size":2}}
